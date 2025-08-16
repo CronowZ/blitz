@@ -45,7 +45,6 @@ public class StatsCommand implements CommandExecutor {
 
         sender.sendMessage(ChatColor.GOLD + "Statistiques de " + ChatColor.WHITE + target.getName());
         sender.sendMessage(ChatColor.YELLOW + "Kills: " + ChatColor.WHITE + s.kills
-                + ChatColor.YELLOW + " | Assists: " + ChatColor.WHITE + s.assists
                 + ChatColor.YELLOW + " | Morts: " + ChatColor.WHITE + s.deaths);
         sender.sendMessage(ChatColor.YELLOW + "K/D: " + ChatColor.WHITE + String.format(java.util.Locale.US, "%.2f", kd));
         return true;
