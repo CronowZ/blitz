@@ -16,6 +16,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.util.*;
 
@@ -181,6 +183,12 @@ public class CombatTrackerListener implements Listener {
             String prefix = String.join(ChatColor.GRAY + ", ", killerNames.subList(0, killerNames.size() - 1));
             msg = prefix + ChatColor.GRAY + " et " + killerNames.get(killerNames.size() - 1)
                     + ChatColor.GRAY + " ont tué " + victimName + ChatColor.GRAY + " !";
+
+        }
+
+        for (Player p : victim.getWorld().getPlayers()) {
+            p.sendMessage(msg);
+
         }
 
         for (Player p : victim.getWorld().getPlayers()) {
@@ -191,5 +199,30 @@ public class CombatTrackerListener implements Listener {
     private String coloredName(Player p) {
         if (p == null) return ChatColor.GRAY + "un joueur";
         return TeamChatFormatter.teamColor(p) + p.getName();
+    }
+
+    private String coloredName(Player p) {
+        if (p == null) return ChatColor.GRAY + "un joueur";
+        return TeamChatFormatter.teamColor(findTeam(p)) + p.getName();
+    }
+
+    private Team findTeam(Player p) {
+        try {
+            Scoreboard sb = p.getScoreboard();
+            if (sb == null) sb = Bukkit.getScoreboardManager().getMainScoreboard();
+            if (sb != null) {
+                for (Team t : sb.getTeams()) {
+                    try {
+                        if (t.hasPlayer(p)) return t;
+                    } catch (Throwable ignored) {
+                        try {
+                            org.bukkit.OfflinePlayer off = Bukkit.getOfflinePlayer(p.getUniqueId());
+                            if (t.hasPlayer(off)) return t;
+                        } catch (Throwable ignored2) {}
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return null;
     }
 }
