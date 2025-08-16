@@ -16,6 +16,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.util.*;
 
@@ -156,11 +158,49 @@ public class CombatTrackerListener implements Listener {
                 kp.spigot().sendMessage(ChatMessageType.ACTION_BAR,
                         new TextComponent("§aTu as tué §f" + (victim != null ? victim.getName() : "un joueur") + " §a! " + txt));
             }
+
         }
 
         // Message global en jeu
         broadcastDeathMessage(killers, victim);
     }
+
+    private void broadcastDeathMessage(Set<UUID> killers, Player victim) {
+        if (victim == null) return;
+        List<String> killerNames = new ArrayList<>();
+        for (UUID id : killers) {
+            Player p = Bukkit.getPlayer(id);
+            killerNames.add(coloredName(p));
+        }
+        String victimName = coloredName(victim);
+
+        String msg;
+        if (killerNames.size() == 1) {
+            msg = killerNames.get(0) + ChatColor.GRAY + " a tué " + victimName + ChatColor.GRAY + " !";
+        } else if (killerNames.size() == 2) {
+            msg = killerNames.get(0) + ChatColor.GRAY + " et " + killerNames.get(1)
+                    + ChatColor.GRAY + " ont tué " + victimName + ChatColor.GRAY + " !";
+        } else {
+            String prefix = String.join(ChatColor.GRAY + ", ", killerNames.subList(0, killerNames.size() - 1));
+            msg = prefix + ChatColor.GRAY + " et " + killerNames.get(killerNames.size() - 1)
+                    + ChatColor.GRAY + " ont tué " + victimName + ChatColor.GRAY + " !";
+
+        }
+
+        for (Player p : victim.getWorld().getPlayers()) {
+            p.sendMessage(msg);
+
+        }
+
+        for (Player p : victim.getWorld().getPlayers()) {
+            p.sendMessage(msg);
+
+        }
+
+        // Message global en jeu
+        broadcastDeathMessage(killers, victim);
+    }
+
 
     private void broadcastDeathMessage(Set<UUID> killers, Player victim) {
         if (victim == null) return;
@@ -189,4 +229,35 @@ public class CombatTrackerListener implements Listener {
     }
 
     // utilité transférée vers TeamChatFormatter
+
+    private String coloredName(Player p) {
+        if (p == null) return ChatColor.GRAY + "un joueur";
+        return TeamChatFormatter.teamColor(p) + p.getName();
+    }
+
+    private String coloredName(Player p) {
+        if (p == null) return ChatColor.GRAY + "un joueur";
+        return TeamChatFormatter.teamColor(findTeam(p)) + p.getName();
+    }
+
+    private Team findTeam(Player p) {
+        try {
+            Scoreboard sb = p.getScoreboard();
+            if (sb == null) sb = Bukkit.getScoreboardManager().getMainScoreboard();
+            if (sb != null) {
+                for (Team t : sb.getTeams()) {
+                    try {
+                        if (t.hasPlayer(p)) return t;
+                    } catch (Throwable ignored) {
+                        try {
+                            org.bukkit.OfflinePlayer off = Bukkit.getOfflinePlayer(p.getUniqueId());
+                            if (t.hasPlayer(off)) return t;
+                        } catch (Throwable ignored2) {}
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return null;
+    }
+
 }

@@ -104,8 +104,13 @@ public class Blitz2v2 extends JavaPlugin {
         pm.registerEvents(new SubMenuListener(),           this);
         pm.registerEvents(new CommandRestrictionListener(), this);
         pm.registerEvents(new CombatListener(),            this);
-        pm.registerEvents(new CombatTrackerListener(killStatsManager), this);
+
         pm.registerEvents(new DeathMessageSuppressor(),    this);
+
+
+        pm.registerEvents(new DeathMessageSuppressor(),    this);
+
+
         pm.registerEvents(new TeamFriendlyFireListener(),  this);
         pm.registerEvents(new WaitingRoomVoidListener(),   this);
         pm.registerEvents(new PartyListener(),             this);

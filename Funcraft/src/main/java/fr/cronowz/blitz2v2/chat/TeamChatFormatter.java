@@ -24,6 +24,7 @@ public final class TeamChatFormatter {
     }
 
     /**
+
      * Retourne le pseudo du joueur coloré selon son équipe.
      */
     public static String coloredName(Player p) {
@@ -32,6 +33,7 @@ public final class TeamChatFormatter {
     }
 
     /**
+
      * Détermine la couleur d'une équipe Bukkit.
      * Conserve l'ancien comportement pour compatibilité éventuelle.
      */
