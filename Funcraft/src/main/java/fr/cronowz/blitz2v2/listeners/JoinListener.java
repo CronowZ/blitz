@@ -99,12 +99,12 @@ public class JoinListener implements Listener {
         obj.getScore("§fMode: §eLobby").setScore(line--);
         obj.getScore("§fEn ligne: §a" + Bukkit.getOnlinePlayers().size()
                 + "§7/" + Bukkit.getMaxPlayers()).setScore(line--);
-        obj.getScore(" ").setScore(line--);
-        obj.getScore(" ").setScore(line--);
-        obj.getScore(" ").setScore(line--);
+        obj.getScore("  ").setScore(line--);   // lignes vides uniques
+        obj.getScore("   ").setScore(line--);
+        obj.getScore("    ").setScore(line--);
         obj.getScore("§fJoueur: §a" + p.getName()).setScore(line--);
         obj.getScore("§fVisitez: §bplexymc.org").setScore(line--);
-        obj.getScore("  ").setScore(line);
+        obj.getScore("     ").setScore(line);
 
         p.setScoreboard(board);
     }
