@@ -1,0 +1,27 @@
+name: Blitz2v2
+main: fr.cronowz.blitz2v2.Blitz2v2
+version: 1.0
+
+commands:
+  stats:
+    description: Affiche tes stats (ou celles d’un joueur)
+    usage: "/stats [joueur]"
+  hub:
+    description: Retourne au lobby principal
+  spawn:
+    description: Retourne au spawn du lobby
+  protect:
+    description: Gestion des zones de protection
+    usage: "/protect <wand|save <id>|list>"
+    permission: blitz2v2.protect.admin
+
+permissions:
+  blitz2v2.protect.admin:
+    description: Utiliser la baguette + commandes de protection
+    default: op
+  blitz2v2.protection.bypass:
+    description: Ignorer les protections de blocs/coffres
+    default: op
+
+softdepend:
+  - ProtocolLib

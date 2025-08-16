@@ -1,0 +1,51 @@
+# config.yml
+
+# === Spawn du lobby ===
+lobby:
+  world: world_lobby
+  x: 545
+  y: 50
+  z: 415
+
+# === Waiting rooms ===
+waiting:
+  # Clonage du monde template pour chaque salle
+  world: world_waiting     # (anciennement “world-template”)
+  max-rooms: 5
+  void-y: 0
+
+# === Spawns d’arrivée dans le monde de jeu (avec orientation yaw pour le premier spawn) ===
+spawns:
+  red:  -74.0,192.0,0.5,-90,0   # la team rouge regarde vers -90°
+  blue:  74.0,192.0,0.5,90,0    # la team bleue regarde vers +90°
+
+# === Nexus (zones de but) ===
+nexus:
+  # Lorsque le joueur touche ce point, l’équipe adverse marque.
+  red:  -80.0,201.0,0.5     # nexus rouge au sol
+  blue:  81.0,201.0,0.5     # nexus bleu au sol
+
+# === World de jeu à rollback ===
+game:
+  world: world_game
+  backup-folder: world_game_backup
+  target-points: 4         # Nombre de points pour gagner
+
+# === Durées (en secondes) du countdown avant le début ===
+countdown:
+  min-players:   3
+  time-3-players: 180
+  time-4-players: 20
+  max-players:   4
+
+# === Kit de départ ===
+kit:
+  potatoes:                      12
+  pickaxe-remaining-durability: 20
+
+protection:
+  chests-unbreakable: true
+  chests-world-prefixes:
+    - world_game
+  regions: {}
+
