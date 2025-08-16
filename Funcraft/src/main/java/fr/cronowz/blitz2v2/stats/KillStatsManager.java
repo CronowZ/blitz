@@ -13,7 +13,6 @@ public class KillStatsManager {
     public static class Stats {
         public int kills;
         public int deaths;
-        public int assists;
     }
 
     private final Map<UUID, Stats> data = new HashMap<>();
@@ -30,15 +29,13 @@ public class KillStatsManager {
 
     public void addKill(UUID id)    { get(id).kills++; }
     public void addDeath(UUID id)   { get(id).deaths++; }
-    public void addAssist(UUID id)  { get(id).assists++; }
 
     public void save() {
         YamlConfiguration y = new YamlConfiguration();
         for (Map.Entry<UUID, Stats> e : data.entrySet()) {
             String k = e.getKey().toString();
-            y.set(k + ".kills",   e.getValue().kills);
-            y.set(k + ".deaths",  e.getValue().deaths);
-            y.set(k + ".assists", e.getValue().assists);
+            y.set(k + ".kills",  e.getValue().kills);
+            y.set(k + ".deaths", e.getValue().deaths);
         }
         try { y.save(file); } catch (IOException ignored) {}
     }
@@ -51,9 +48,8 @@ public class KillStatsManager {
             try {
                 UUID id = UUID.fromString(k);
                 Stats s = new Stats();
-                s.kills   = y.getInt(k + ".kills", 0);
-                s.deaths  = y.getInt(k + ".deaths", 0);
-                s.assists = y.getInt(k + ".assists", 0);
+                s.kills  = y.getInt(k + ".kills", 0);
+                s.deaths = y.getInt(k + ".deaths", 0);
                 data.put(id, s);
             } catch (Exception ignored) {}
         }
