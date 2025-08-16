@@ -1,10 +1,11 @@
 package fr.cronowz.blitz2v2.combat;
 
+import fr.cronowz.blitz2v2.chat.TeamChatFormatter;
 import fr.cronowz.blitz2v2.stats.KillStatsManager;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
+import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
@@ -15,6 +16,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 
 import java.util.*;
 
@@ -123,41 +126,92 @@ public class CombatTrackerListener implements Listener {
 
     private void handleDeath(UUID victimId, UUID killerId, Map<UUID, Hit> contrib, boolean fromQuit) {
         stats.addDeath(victimId);
-        stats.addKill(killerId);
 
-        Player killer = Bukkit.getPlayer(killerId);
         Player victim = Bukkit.getPlayer(victimId);
 
-        // Assists
+        // Déterminer tous les joueurs méritant le kill (killer + gros dégâts)
+        Set<UUID> killers = new LinkedHashSet<>();
+        killers.add(killerId);
+
         if (contrib != null && victim != null) {
-            double maxHP = Math.max(20.0, victim.getMaxHealth()); // 20 = 10 coeurs
+            double maxHP = Math.max(20.0, victim.getMaxHealth());
             for (Map.Entry<UUID, Hit> en : contrib.entrySet()) {
                 UUID other = en.getKey();
-                if (other.equals(killerId)) continue;
                 Hit h = en.getValue();
+                if (other.equals(killerId)) continue;
                 if (System.currentTimeMillis() - h.lastTime > COMBAT_TIMEOUT_MS) continue;
                 if (h.totalDamage >= maxHP * ASSIST_MIN_FRACTION || h.totalDamage >= 1.0) {
-                    stats.addAssist(other);
-                    Player a = Bukkit.getPlayer(other);
-                    if (a != null) {
-                        try {
-                            a.playSound(a.getLocation(), Sound.ENTITY_ITEM_PICKUP, 1f, 1.2f);
-                        } catch (Throwable ignored) {}
-                        a.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                                new TextComponent("§aAssist sur §f" + (victim != null ? victim.getName() : "un joueur")));
-                    }
+                    killers.add(other);
                 }
             }
         }
 
-        // Sons + feedback killer
-        if (killer != null) {
-            try {
-                killer.playSound(killer.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
-            } catch (Throwable ignored) {}
-            String txt = fromQuit ? "§e(l’a quitté en combat)" : "";
-            killer.spigot().sendMessage(ChatMessageType.ACTION_BAR,
-                    new TextComponent("§aTu as tué §f" + (victim != null ? victim.getName() : "un joueur") + " §a! " + txt));
+        // Stats + feedback pour chaque killer
+        for (UUID id : killers) {
+            stats.addKill(id);
+            Player kp = Bukkit.getPlayer(id);
+            if (kp != null) {
+                try {
+                    kp.playSound(kp.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1f, 1.5f);
+                } catch (Throwable ignored) {}
+                String txt = fromQuit ? "§e(l’a quitté en combat)" : "";
+                kp.spigot().sendMessage(ChatMessageType.ACTION_BAR,
+                        new TextComponent("§aTu as tué §f" + (victim != null ? victim.getName() : "un joueur") + " §a! " + txt));
+            }
         }
+
+        // Message global en jeu
+        broadcastDeathMessage(killers, victim);
+    }
+
+    private void broadcastDeathMessage(Set<UUID> killers, Player victim) {
+        if (victim == null) return;
+        List<String> killerNames = new ArrayList<>();
+        for (UUID id : killers) {
+            Player p = Bukkit.getPlayer(id);
+            killerNames.add(coloredName(p));
+        }
+        String victimName = coloredName(victim);
+
+        String msg;
+        if (killerNames.size() == 1) {
+            msg = killerNames.get(0) + ChatColor.GRAY + " a tué " + victimName + ChatColor.GRAY + " !";
+        } else if (killerNames.size() == 2) {
+            msg = killerNames.get(0) + ChatColor.GRAY + " et " + killerNames.get(1)
+                    + ChatColor.GRAY + " ont tué " + victimName + ChatColor.GRAY + " !";
+        } else {
+            String prefix = String.join(ChatColor.GRAY + ", ", killerNames.subList(0, killerNames.size() - 1));
+            msg = prefix + ChatColor.GRAY + " et " + killerNames.get(killerNames.size() - 1)
+                    + ChatColor.GRAY + " ont tué " + victimName + ChatColor.GRAY + " !";
+        }
+
+        for (Player p : victim.getWorld().getPlayers()) {
+            p.sendMessage(msg);
+        }
+    }
+
+    private String coloredName(Player p) {
+        if (p == null) return ChatColor.GRAY + "un joueur";
+        return TeamChatFormatter.teamColor(findTeam(p)) + p.getName();
+    }
+
+    private Team findTeam(Player p) {
+        try {
+            Scoreboard sb = p.getScoreboard();
+            if (sb == null) sb = Bukkit.getScoreboardManager().getMainScoreboard();
+            if (sb != null) {
+                for (Team t : sb.getTeams()) {
+                    try {
+                        if (t.hasPlayer(p)) return t;
+                    } catch (Throwable ignored) {
+                        try {
+                            org.bukkit.OfflinePlayer off = Bukkit.getOfflinePlayer(p.getUniqueId());
+                            if (t.hasPlayer(off)) return t;
+                        } catch (Throwable ignored2) {}
+                    }
+                }
+            }
+        } catch (Throwable ignored) {}
+        return null;
     }
 }

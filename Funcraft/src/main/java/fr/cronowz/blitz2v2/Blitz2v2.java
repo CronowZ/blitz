@@ -3,9 +3,9 @@ package fr.cronowz.blitz2v2;
 
 import fr.cronowz.blitz2v2.commands.HubCommand;
 import fr.cronowz.blitz2v2.commands.SpawnCommand;
+import fr.cronowz.blitz2v2.commands.StatsCommand;
 import fr.cronowz.blitz2v2.game.GameRulesListener;
 import fr.cronowz.blitz2v2.game.KitService;
-import fr.cronowz.blitz2v2.listeners.ChatListener;
 import fr.cronowz.blitz2v2.listeners.CommandRestrictionListener;
 import fr.cronowz.blitz2v2.listeners.CombatListener;
 import fr.cronowz.blitz2v2.listeners.CompassMenuListener;
@@ -23,6 +23,8 @@ import fr.cronowz.blitz2v2.listeners.WaitingRoomListener;
 import fr.cronowz.blitz2v2.listeners.WaitingRoomVoidListener;
 import fr.cronowz.blitz2v2.listeners.WeatherLockListener;
 import fr.cronowz.blitz2v2.manager.GameManager;
+import fr.cronowz.blitz2v2.combat.CombatTrackerListener;
+import fr.cronowz.blitz2v2.stats.KillStatsManager;
 import fr.cronowz.blitz2v2.protect.ProtectionListener;
 import fr.cronowz.blitz2v2.protect.ProtectionManager;
 import fr.cronowz.blitz2v2.protect.SelectionManager;
@@ -42,6 +44,7 @@ public class Blitz2v2 extends JavaPlugin {
 
     private GameManager       gameManager;
     private KitService        kitService;
+    private KillStatsManager  killStatsManager;
     private FileConfiguration cfg;
     private String            gameWorldName;
     private Location          lobbySpawn;
@@ -73,8 +76,9 @@ public class Blitz2v2 extends JavaPlugin {
 
         int potatoAmount = cfg.getInt("kit.potatoes", 12);
         int pickDur      = cfg.getInt("kit.pickaxe-remaining-durability", 20);
-        this.kitService  = new KitService(potatoAmount, pickDur);
-        this.gameManager = new GameManager();
+        this.kitService       = new KitService(potatoAmount, pickDur);
+        this.gameManager      = new GameManager();
+        this.killStatsManager = new KillStatsManager(getDataFolder());
 
         // Nettoyage en cas de /reload
         HandlerList.unregisterAll(this);
@@ -97,9 +101,9 @@ public class Blitz2v2 extends JavaPlugin {
         pm.registerEvents(new InventoryProtectionListener(), this);
         pm.registerEvents(new CompassMenuListener(),       this);
         pm.registerEvents(new SubMenuListener(),           this);
-        pm.registerEvents(new ChatListener(),              this);
         pm.registerEvents(new CommandRestrictionListener(), this);
         pm.registerEvents(new CombatListener(),            this);
+        pm.registerEvents(new CombatTrackerListener(killStatsManager), this);
         pm.registerEvents(new TeamFriendlyFireListener(),  this);
         pm.registerEvents(new WaitingRoomVoidListener(),   this);
         pm.registerEvents(new PartyListener(),             this);
@@ -128,6 +132,7 @@ public class Blitz2v2 extends JavaPlugin {
         }
         if (getCommand("hub")   != null) getCommand("hub").setExecutor(new HubCommand());
         if (getCommand("spawn") != null) getCommand("spawn").setExecutor(new SpawnCommand());
+        if (getCommand("stats") != null) getCommand("stats").setExecutor(new StatsCommand(killStatsManager));
 
         getLogger().info("Blitz2v2 activé !");
     }
@@ -136,6 +141,7 @@ public class Blitz2v2 extends JavaPlugin {
     public void onDisable() {
         HandlerList.unregisterAll(this);
         Bukkit.getScheduler().cancelTasks(this);
+        if (killStatsManager != null) killStatsManager.save();
         getLogger().info("Blitz2v2 désactivé.");
     }
 
