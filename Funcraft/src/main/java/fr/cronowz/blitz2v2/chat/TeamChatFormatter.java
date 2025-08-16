@@ -24,6 +24,16 @@ public final class TeamChatFormatter {
     }
 
     /**
+
+     * Retourne le pseudo du joueur coloré selon son équipe.
+     */
+    public static String coloredName(Player p) {
+        if (p == null) return ChatColor.GRAY + "un joueur";
+        return teamColor(p) + p.getName();
+    }
+
+    /**
+
      * Détermine la couleur d'une équipe Bukkit.
      * Conserve l'ancien comportement pour compatibilité éventuelle.
      */
