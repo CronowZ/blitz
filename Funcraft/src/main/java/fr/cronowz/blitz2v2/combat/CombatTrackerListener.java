@@ -183,11 +183,22 @@ public class CombatTrackerListener implements Listener {
             String prefix = String.join(ChatColor.GRAY + ", ", killerNames.subList(0, killerNames.size() - 1));
             msg = prefix + ChatColor.GRAY + " et " + killerNames.get(killerNames.size() - 1)
                     + ChatColor.GRAY + " ont tué " + victimName + ChatColor.GRAY + " !";
+
+        }
+
+        for (Player p : victim.getWorld().getPlayers()) {
+            p.sendMessage(msg);
+
         }
 
         for (Player p : victim.getWorld().getPlayers()) {
             p.sendMessage(msg);
         }
+    }
+
+    private String coloredName(Player p) {
+        if (p == null) return ChatColor.GRAY + "un joueur";
+        return TeamChatFormatter.teamColor(p) + p.getName();
     }
 
     private String coloredName(Player p) {

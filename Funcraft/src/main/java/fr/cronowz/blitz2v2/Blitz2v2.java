@@ -13,6 +13,7 @@ import fr.cronowz.blitz2v2.listeners.CreatureSpawnListener;
 import fr.cronowz.blitz2v2.listeners.GameExitListener;
 import fr.cronowz.blitz2v2.listeners.InventoryProtectionListener;
 import fr.cronowz.blitz2v2.listeners.JoinListener;
+import fr.cronowz.blitz2v2.listeners.DeathMessageSuppressor;
 import fr.cronowz.blitz2v2.listeners.JoinQuitSuppressListener;
 import fr.cronowz.blitz2v2.listeners.LobbyProtectionListener;
 import fr.cronowz.blitz2v2.listeners.PartyListener;
@@ -104,6 +105,9 @@ public class Blitz2v2 extends JavaPlugin {
         pm.registerEvents(new CommandRestrictionListener(), this);
         pm.registerEvents(new CombatListener(),            this);
         pm.registerEvents(new CombatTrackerListener(killStatsManager), this);
+
+        pm.registerEvents(new DeathMessageSuppressor(),    this);
+
         pm.registerEvents(new TeamFriendlyFireListener(),  this);
         pm.registerEvents(new WaitingRoomVoidListener(),   this);
         pm.registerEvents(new PartyListener(),             this);
